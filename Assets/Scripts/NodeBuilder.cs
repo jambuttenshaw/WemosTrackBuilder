@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,6 +14,10 @@ public class NodeBuilder : MonoBehaviour
 
     List<Node> nodes;
     Node selectedNode = null;
+    Node ring1Node = null;
+    Node ring2Node = null;
+
+    int[] triIndices;
 
     private void Awake()
     {
@@ -58,6 +63,24 @@ public class NodeBuilder : MonoBehaviour
             Debug.Log(NodeExporter.NodeNetworkToString(exportScale, ref nodesArray));
         }
 
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            if (selectedNode != null)
+                ring1Node = selectedNode;
+        }
+
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            if (selectedNode != null)
+                ring2Node = selectedNode;
+        }
+
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            triIndices = NodeTriangulator.Triangulate(nodes, ring1Node, ring2Node);
+            Debug.Log(NodeExporter.TriangleIndicesToString(ref triIndices));
+        }
+
         if (Input.GetKeyDown(KeyCode.Delete))
         {
             // delete the selected node
@@ -76,12 +99,10 @@ public class NodeBuilder : MonoBehaviour
         if (selectedNode != null)
         {
             selectedNode.SetSelected(false);
-            selectedNode.transform.GetChild(0).GetComponent<SphereMaterialSetter>().SetMaterial(false);
         }
 
         selectedNode = node;
         node.SetSelected(true);
-        node.transform.GetChild(0).GetComponent<SphereMaterialSetter>().SetMaterial(true);
     }
 
     private bool ClickingNode(out Node clickedNode)
@@ -115,7 +136,7 @@ public class NodeBuilder : MonoBehaviour
         sphere.transform.parent = newNodeGO.transform;
         sphere.transform.localPosition = Vector3.zero;
 
-        newNode.Setup(nodes.Count);
+        newNode.Setup(nodes.Count, sphere.GetComponent<SphereMaterialSetter>());
 
         nodes.Add(newNode);
         return newNode;
@@ -147,6 +168,27 @@ public class NodeBuilder : MonoBehaviour
                 {
                     node.DeleteConnection(nodeIndex);
                 }
+            }
+        }
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (triIndices.Length > 0)
+        {
+            int numTriangles = triIndices.Length / 3;
+            int triIndex = 0;
+            for (int i = 0; i < numTriangles; i++)
+            {
+                Vector3 pos1 = nodes[triIndices[triIndex]].transform.position;
+                Vector3 pos2 = nodes[triIndices[triIndex + 1]].transform.position;
+                Vector3 pos3 = nodes[triIndices[triIndex + 2]].transform.position;
+
+                Debug.DrawLine(pos1, pos2);
+                Debug.DrawLine(pos1, pos3);
+                Debug.DrawLine(pos2, pos3);
+
+                triIndex += 3;
             }
         }
     }

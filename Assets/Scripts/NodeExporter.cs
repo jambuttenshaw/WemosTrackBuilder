@@ -6,6 +6,19 @@ using UnityEngine.XR.WSA;
 
 public class NodeExporter
 {
+
+    public static string TriangleIndicesToString(ref int[] indices)
+    {
+        string indicesString = "";
+
+        for (int i = 0; i < indices.Length; i++)
+        {
+            indicesString += "m_TrackAreaIndices[" + i + "] = " + indices[i] + ";\n";
+        }
+
+        return indicesString;
+    }
+
     public static string NodeNetworkToString(float exportScale, ref Node[] nodes)
     {
         // info each node has:

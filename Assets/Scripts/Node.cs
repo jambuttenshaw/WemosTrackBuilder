@@ -11,31 +11,39 @@ public class Node : MonoBehaviour
 
     bool selected;
 
-    public GameObject visualSphere;
+    public SphereMaterialSetter materialSetter;
 
     private void Update()
     {
         if (selected)
         {
+            materialSetter.SetMaterial(SphereMaterialSetter.SphereMaterial.Selected);
             if (Input.GetMouseButton(0))
             {
                 transform.position = Camera.main.ScreenToWorldPoint(Input.mousePosition) + new Vector3(0, 0, 10);
             }
+        } else
+        {
+            materialSetter.SetMaterial(SphereMaterialSetter.SphereMaterial.Ring1);
         }
     }
 
-    public void Setup(int index)
+    public void Setup(int index, SphereMaterialSetter matSetter)
     {
         edgeConnections = new List<int>();
         areaConnections = new List<int>();
 
         nodeIndex = index;
+
+        materialSetter = matSetter;
     }
 
     public void ConnectNodeToEdge(int nodeToConnect)
     {
         edgeConnections.Add(nodeToConnect);
-    }
+        if (edgeConnections.Count > 1)
+            Debug.LogError("More than one connection to node; track is invalid.");
+    }   
 
     public void DeleteConnection(int nodeIndex)
     {
