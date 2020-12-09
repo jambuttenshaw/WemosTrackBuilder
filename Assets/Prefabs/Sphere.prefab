@@ -106,6 +106,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85c7fc9842573784eaf29f2645a16b01, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ring1Material: {fileID: 2100000, guid: d814f5ec7d595d341a38bbc7e78fe628, type: 2}
-  ring2Material: {fileID: 2100000, guid: 0bd3192b4ba9f3f45800c85bb06f745c, type: 2}
+  defaultMaterial: {fileID: 2100000, guid: d814f5ec7d595d341a38bbc7e78fe628, type: 2}
+  ring1Material: {fileID: 2100000, guid: a8c4b0acd83e16643be944a417fcd391, type: 2}
+  ring2Material: {fileID: 2100000, guid: 5a61d7a0a523201418c1626ac12a7410, type: 2}
   selectedMaterial: {fileID: 2100000, guid: e25f6d63592889343a5f99062c535b87, type: 2}

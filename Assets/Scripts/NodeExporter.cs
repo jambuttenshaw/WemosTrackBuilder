@@ -32,7 +32,7 @@ public class NodeExporter
         foreach(Node n in nodes)
         {
             // insert the position of this node at its index in the array
-            positions[n.GetIndex()] = exportScale * n.transform.position;
+            positions[n.GetIndex()] = exportScale * new Vector3(n.transform.position.x, -n.transform.position.y, n.transform.position.z);
         }
 
 

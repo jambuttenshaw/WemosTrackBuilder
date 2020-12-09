@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class NodeBuilder : MonoBehaviour
 {
@@ -11,6 +12,7 @@ public class NodeBuilder : MonoBehaviour
     [Header("Attributes")]
     public GameObject connectionPrefab;
     public GameObject spherePrefab;
+    public EventSystem eventSystem;
 
     List<Node> nodes;
     Node selectedNode = null;
@@ -26,59 +28,48 @@ public class NodeBuilder : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (!EventSystem.current.IsPointerOverGameObject())
         {
-            // run function for mouse left click
-            if (ClickingNode(out Node clickedNode))
+            if (Input.GetMouseButtonDown(0))
             {
-                SelectNode(clickedNode);
-            }
-            else
-            {
-                Node newNode = CreateNode();
-                ConnectNodeToSelected(newNode);
+                // run function for mouse left click
+                if (ClickingNode(out Node clickedNode))
+                {
+                    SelectNode(clickedNode);
+                }
+                else
+                {
+                    Node newNode = CreateNode();
+                    ConnectNodeToSelected(newNode);
 
-                SelectNode(newNode);
+                    SelectNode(newNode);
+                }
             }
-        }
 
-        if (Input.GetMouseButtonDown(1))
-        {
-            // run function for mouse right click
-            if (ClickingNode(out Node clickedNode))
+            if (Input.GetMouseButtonDown(1))
             {
-                ConnectNodeToSelected(clickedNode);
-                SelectNode(clickedNode);
-            }
-            else
-            {
-                Node newNode = CreateNode();
-                SelectNode(newNode);
+                // run function for mouse right click
+                if (ClickingNode(out Node clickedNode))
+                {
+                    ConnectNodeToSelected(clickedNode);
+                    SelectNode(clickedNode);
+                }
+                else
+                {
+                    Node newNode = CreateNode();
+                    SelectNode(newNode);
+                }
             }
         }
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            Node[] nodesArray = nodes.ToArray();
-            Debug.Log(NodeExporter.NodeNetworkToString(exportScale, ref nodesArray));
-        }
-
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            if (selectedNode != null)
-                ring1Node = selectedNode;
-        }
-
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            if (selectedNode != null)
-                ring2Node = selectedNode;
+            ExportTrackEdgesAndPositions();
         }
 
         if (Input.GetKeyDown(KeyCode.E))
         {
-            triIndices = NodeTriangulator.Triangulate(nodes, ring1Node, ring2Node);
-            Debug.Log(NodeExporter.TriangleIndicesToString(ref triIndices));
+            ExportTrackTriangles();   
         }
 
         if (Input.GetKeyDown(KeyCode.Delete))
@@ -142,6 +133,55 @@ public class NodeBuilder : MonoBehaviour
         return newNode;
     }
 
+    private Node CreateNodeFromExistingData(NodeData data)
+    {
+        GameObject newNodeGO = new GameObject("Node " + (nodes.Count + 1));
+        Node newNode = newNodeGO.AddComponent<Node>();
+
+        Vector3 pos = new Vector3(data.position[0], data.position[1], data.position[2]);
+
+        newNodeGO.transform.position = pos;
+        newNodeGO.transform.parent = transform;
+
+        GameObject sphere = Instantiate(spherePrefab);
+        sphere.transform.parent = newNodeGO.transform;
+        sphere.transform.localPosition = Vector3.zero;
+
+        newNode.Setup(data.nodeIndex, sphere.GetComponent<SphereMaterialSetter>());
+
+        foreach (int nodeConnection in data.edgeConnections)
+        {
+            newNode.ConnectNodeToEdge(nodeConnection);
+        }
+
+        nodes.Add(newNode);
+        return newNode;
+    }
+
+    public void LoadTrack()
+    {
+        NodeData[] nodeData = SaveSystem.LoadTrack();
+        foreach (NodeData nD in nodeData)
+        {
+            CreateNodeFromExistingData(nD);
+        }
+
+        // then create the connections
+        foreach (Node n in nodes)
+        {
+            foreach (int connection in n.GetEdgeConnections())
+            {
+                // create a connection game object
+                GameObject connectionGO = Instantiate(connectionPrefab);
+                LineRendererController lRC = connectionGO.GetComponent<LineRendererController>();
+
+                lRC.Setup(n.transform, nodes[connection].transform);
+
+                connectionGO.transform.parent = n.transform;
+            }
+        }
+    }
+
     void ConnectNodeToSelected(Node node)
     {
         if (selectedNode != null)
@@ -174,6 +214,8 @@ public class NodeBuilder : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        if (triIndices == null) return;
+
         if (triIndices.Length > 0)
         {
             int numTriangles = triIndices.Length / 3;
@@ -191,6 +233,47 @@ public class NodeBuilder : MonoBehaviour
                 triIndex += 3;
             }
         }
+    }
+
+    public void SetRing1Node()
+    {
+        if (ring1Node != null)
+            ring1Node.ring1 = false;
+
+        if (selectedNode != null)
+        {
+            ring1Node = selectedNode;
+            ring1Node.ring1 = true;
+        }
+    }
+
+    public void SetRing2Node()
+    {
+        if (ring2Node != null)
+            ring2Node.ring2 = false;
+
+        if (selectedNode != null)
+        {
+            ring2Node = selectedNode;
+            ring2Node.ring2 = true;
+        }
+    }
+
+    public void ExportTrackEdgesAndPositions()
+    {
+        Node[] nodesArray = nodes.ToArray();
+        Debug.Log(NodeExporter.NodeNetworkToString(exportScale, ref nodesArray));
+    }
+
+    public void ExportTrackTriangles()
+    {
+        triIndices = NodeTriangulator.Triangulate(nodes, ring1Node, ring2Node);
+        Debug.Log(NodeExporter.TriangleIndicesToString(ref triIndices));
+    }
+
+    public void SaveTrack()
+    {
+        SaveSystem.SaveTrack(nodes);
     }
 
 }

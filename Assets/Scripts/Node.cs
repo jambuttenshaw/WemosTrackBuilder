@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class Node : MonoBehaviour
 {
@@ -10,6 +11,8 @@ public class Node : MonoBehaviour
     List<int> areaConnections;
 
     bool selected;
+    public bool ring1 = false;
+    public bool ring2 = false;
 
     public SphereMaterialSetter materialSetter;
 
@@ -18,13 +21,22 @@ public class Node : MonoBehaviour
         if (selected)
         {
             materialSetter.SetMaterial(SphereMaterialSetter.SphereMaterial.Selected);
-            if (Input.GetMouseButton(0))
+            if (Input.GetMouseButton(0) && !EventSystem.current.IsPointerOverGameObject())
             {
                 transform.position = Camera.main.ScreenToWorldPoint(Input.mousePosition) + new Vector3(0, 0, 10);
             }
-        } else
+        } 
+        else if (ring1)
         {
             materialSetter.SetMaterial(SphereMaterialSetter.SphereMaterial.Ring1);
+        }
+        else if (ring2)
+        {
+            materialSetter.SetMaterial(SphereMaterialSetter.SphereMaterial.Ring2);
+        }
+        else
+        {
+            materialSetter.SetMaterial(SphereMaterialSetter.SphereMaterial.Default);
         }
     }
 

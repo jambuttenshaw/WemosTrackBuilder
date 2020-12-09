@@ -69,8 +69,10 @@
     <Compile Include="Assets\Scripts\MoveByWASD.cs" />
     <Compile Include="Assets\Scripts\Node.cs" />
     <Compile Include="Assets\Scripts\NodeBuilder.cs" />
+    <Compile Include="Assets\Scripts\NodeData.cs" />
     <Compile Include="Assets\Scripts\NodeExporter.cs" />
     <Compile Include="Assets\Scripts\NodeTriangulator.cs" />
+    <Compile Include="Assets\Scripts\SaveSystem.cs" />
     <Compile Include="Assets\Scripts\SphereMaterialSetter.cs" />
     <Reference Include="UnityEngine">
       <HintPath>D:/Unity Installs/2019.4.0f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
